@@ -1,0 +1,49 @@
+# Unity специфичные
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# Ассеты, генерируемые Unity
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Решения Visual Studio / Rider
+*.sln
+*.csproj
+*.unityproj
+*.sln.docstates
+.vs/
+.idea/
+
+# Файлы ОС
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+
+# Мусор и временные файлы
+*.tmp
+*.log
+*.stackdump
+*.bundle
+*.unitypackage
+
+# Исключить папку запечённых данных (если не нужна)
+[Oo]cclusionCullingData/
+
+# Файлы конфигурации IDE (кому нужно — добавят свои)
+*.user
+*.userosscache
+*.suo
+*.userprefs
+
+# Исключения для мета-файлов (важно!)
+*.pidb
+*.pdb
+*.mdb

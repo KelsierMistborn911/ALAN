@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: -7079678736464803440}
   - component: {fileID: 5149025855208767657}
   - component: {fileID: 4197685501195366510}
+  - component: {fileID: 3692931042548326368}
   m_Layer: 0
   m_Name: Furry
   m_TagString: Untagged
@@ -103,12 +104,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
-  mass: 1
-  walkSpeed: 3
-  runSpeed: 5.5
-  acceleration: 8
-  deceleration: 6
-  sideFriction: 4
 --- !u!61 &1423485266272845580
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -209,12 +204,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a413bff311ad0ad4dbaf50001b45d715, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rb: {fileID: 0}
-  packMember: {fileID: 0}
+  walkSpeed: 3
+  runSpeed: 5.5
+  maxForce: 15
+  alphaComfortMin: 6
+  alphaComfortMax: 10
+  alphaPanicMultiplier: 2
   alphaDriftSpeed: 1.5
   alphaDriftInterval: 3
+  harasserBehindForce: 1.2
+  harasserSpread: 60
   reachDistance: 0.2
-  maxForce: 15
+  slowdownDistance: 1
   showDebug: 1
 --- !u!114 &4197685501195366510
 MonoBehaviour:
@@ -231,6 +232,7 @@ MonoBehaviour:
   packMember: {fileID: 6155764164949604474}
   movement: {fileID: 5149025855208767657}
   rb: {fileID: -7079678736464803440}
+  attackSprite: {fileID: 3692931042548326368}
   decisionInterval: 0.3
   lungeImpulse: 12
   jumpBackImpulse: 8
@@ -245,3 +247,20 @@ MonoBehaviour:
   retreatDistance: 8
   attackCooldown: 2
   comboHitInterval: 0.4
+--- !u!114 &3692931042548326368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5073433513739552847}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 47084c0cfdd0ec1429d45b1f7fd29c72, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackSprite: {fileID: 21300000, guid: 311eb8dc229c0e444a63cd5334706251, type: 3}
+  showDuration: 0.3
+  spriteOffset: 1.2
+  attackColor: {r: 1, g: 0.3, b: 0, a: 0.8}
+  spriteSize: {x: 1.5, y: 1.5}

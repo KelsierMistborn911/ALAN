@@ -12,6 +12,7 @@ public class HarasserAttack : MonoBehaviour
     [SerializeField] private PackMember packMember;
     [SerializeField] private PackMemberMovement movement;
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private AttackSprite attackSprite;
 
     [Header("Интервал принятия решений")]
     [SerializeField] private float decisionInterval = 0.3f;
@@ -69,6 +70,7 @@ public class HarasserAttack : MonoBehaviour
         if (packMember == null) packMember = GetComponent<PackMember>();
         if (movement == null) movement = GetComponent<PackMemberMovement>();
         if (rb == null) rb = GetComponent<Rigidbody2D>();
+        if (attackSprite == null) attackSprite = GetComponent<AttackSprite>();
 
         playerCombat = FindObjectOfType<CombatController>();
         playerDirection = FindObjectOfType<PlayerDirection>();
@@ -80,6 +82,9 @@ public class HarasserAttack : MonoBehaviour
     {
         if (packMember.IsDead || packMember.CurrentRole != PackManager.TacticalRole.Harasser)
             return;
+
+        if (playerTransform != null)
+            Debug.Log($"{name}: дистанция до игрока = {Vector2.Distance(transform.position, playerTransform.position)}");
 
         cooldownTimer -= Time.deltaTime;
 
@@ -289,12 +294,24 @@ public class HarasserAttack : MonoBehaviour
             case ActionState.JumpAttack:
                 if (stateTimer <= 0f)
                 {
+                    Vector2 jumpDir = playerTransform != null
+                        ? ((Vector2)playerTransform.position - (Vector2)transform.position).normalized
+                        : Vector2.right;
+
+                    // ПОКАЗАТЬ СПРАЙТ
+                    if (attackSprite != null)
+                        attackSprite.ShowAttack(jumpDir);
+
                     TryDealDamage();
                     FinishAction();
                 }
                 break;
 
             case ActionState.LungeAttack:
+                // ПОКАЗАТЬ СПРАЙТ
+                if (attackSprite != null)
+                    attackSprite.ShowAttack(lungeDirection);
+
                 if (playerTransform != null)
                 {
                     float dist = Vector2.Distance(transform.position, playerTransform.position);
@@ -313,6 +330,12 @@ public class HarasserAttack : MonoBehaviour
                 {
                     if (playerTransform != null)
                     {
+                        Vector2 hitDir = ((Vector2)playerTransform.position - (Vector2)transform.position).normalized;
+
+                        // ПОКАЗАТЬ СПРАЙТ
+                        if (attackSprite != null)
+                            attackSprite.ShowAttack(hitDir);
+
                         float dist = Vector2.Distance(transform.position, playerTransform.position);
                         if (dist < strikeReach * 1.2f)
                         {

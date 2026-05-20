@@ -13,7 +13,7 @@ public class PackManager : MonoBehaviour
     [SerializeField] private PackFormation formation;
 
     [Header("Состав ролей")]
-    [SerializeField] private int maxHarassers = 2;
+    [SerializeField] private int maxHarassers = 3;
     [SerializeField] private int maxFlankersPerSide = 2;
 
     [Header("Отладка")]
@@ -78,7 +78,16 @@ public class PackManager : MonoBehaviour
         // Если стая активна — сразу назначаем Reserve
         if (isPackActive)
         {
-            roles[member] = TacticalRole.Reserve;
+            // Если это постоянная альфа — сразу назначаем
+            if (member.IsPermanentAlpha)
+            {
+                alpha = member;
+                roles[member] = TacticalRole.Alpha;
+            }
+            else
+            {
+                roles[member] = TacticalRole.Reserve;
+            }
             formation?.OnMemberAdded(member);
         }
     }
@@ -104,45 +113,37 @@ public class PackManager : MonoBehaviour
     {
         if (allMembers.Count == 0) return;
 
+        // 1. Ищем постоянную альфу (isPermanentAlpha = true)
+        alpha = allMembers.FirstOrDefault(m => m != null && !m.IsDead && m.IsPermanentAlpha);
+
+        if (alpha != null)
+        {
+            roles[alpha] = TacticalRole.Alpha;
+        }
+
+        // 2. Формируем пул из всех живых, кроме альфы
         List<PackMember> pool = allMembers
-            .Where(m => m != null && !m.IsDead)
-            .OrderByDescending(m => Vector2.Distance(m.transform.position, player.position))
+            .Where(m => m != null && !m.IsDead && m != alpha)
+            .OrderBy(m => Vector2.Distance(m.transform.position, player.position))
             .ToList();
 
-        // 1. Alpha — самый дальний
-        alpha = pool[0];
-        roles[alpha] = TacticalRole.Alpha;
-        pool.RemoveAt(0);
-
-        // 2. Harasser'ы — самые ближние к игроку
+        // 3. Harasser'ы — самые ближние к игроку (всегда 3, если хватает)
         int harassersToAssign = Mathf.Min(maxHarassers, pool.Count);
         for (int i = 0; i < harassersToAssign; i++)
         {
-            // Берём ближайших — они в конце списка
-            var harasser = pool[pool.Count - 1];
+            var harasser = pool[0]; // Ближайший
             roles[harasser] = TacticalRole.Harasser;
-            pool.RemoveAt(pool.Count - 1);
-        }
-
-        // 3. Фланкеры — оставшиеся
-        int flankersTotal = Mathf.Min(maxFlankersPerSide * 2, pool.Count);
-        int flankersPerSide = flankersTotal / 2;
-
-        for (int i = 0; i < flankersPerSide && pool.Count > 0; i++)
-        {
-            roles[pool[0]] = TacticalRole.FlankerLeft;
-            pool.RemoveAt(0);
-        }
-        for (int i = 0; i < flankersPerSide && pool.Count > 0; i++)
-        {
-            roles[pool[0]] = TacticalRole.FlankerRight;
             pool.RemoveAt(0);
         }
 
-        // 4. Остальные — Reserve
-        foreach (var member in pool)
+        // 4. Все остальные — фланкеры (окружают и защищают альфу)
+        int halfIndex = pool.Count / 2;
+        for (int i = 0; i < pool.Count; i++)
         {
-            roles[member] = TacticalRole.Reserve;
+            if (i < halfIndex)
+                roles[pool[i]] = TacticalRole.FlankerLeft;
+            else
+                roles[pool[i]] = TacticalRole.FlankerRight;
         }
     }
 
@@ -167,72 +168,46 @@ public class PackManager : MonoBehaviour
         switch (deadRole)
         {
             case TacticalRole.Alpha:
-                PromoteNewAlpha();
+                // Альфа постоянная — просто сообщаем формации
+                formation?.OnMemberDied(member);
                 break;
             case TacticalRole.Harasser:
-                FillRoleFromReserve(TacticalRole.Harasser);
+                ReplaceHarasser();
+                formation?.OnMemberDied(member);
                 break;
             case TacticalRole.FlankerLeft:
             case TacticalRole.FlankerRight:
-                FillRoleFromReserve(deadRole);
+                // Фланкер умер — просто перераспределяем углы окружения
+                formation?.OnMemberDied(member);
                 break;
             case TacticalRole.Reserve:
-                // Просто уменьшилось кольцо
+                formation?.OnMemberDied(member);
                 break;
         }
-
-        formation?.OnMemberDied(member);
     }
 
-    private void PromoteNewAlpha()
+    private void ReplaceHarasser()
     {
-        // Новый Alpha — ближайший к игроку (он уже в бою)
-        PackMember newAlpha = allMembers
-            .Where(m => m != null && !m.IsDead)
+        // Ближайший живой фланкер становится харассером
+        PackMember replacement = allMembers
+            .Where(m => m != null && !m.IsDead && roles.ContainsKey(m)
+                && (roles[m] == TacticalRole.FlankerLeft || roles[m] == TacticalRole.FlankerRight))
             .OrderBy(m => Vector2.Distance(m.transform.position, player.position))
             .FirstOrDefault();
 
-        if (newAlpha == null) return;
-
-        TacticalRole oldRole = roles[newAlpha];
-        roles[newAlpha] = TacticalRole.Alpha;
-        alpha = newAlpha;
-
-        // Заполнить освободившуюся роль
-        FillRoleFromReserve(oldRole);
-        formation?.OnAlphaChanged(newAlpha);
-    }
-
-    private void FillRoleFromReserve(TacticalRole targetRole)
-    {
-        // Приоритет: Reserve → Flanker → другой Flanker → Alpha (последний)
-        PackMember replacement = allMembers
-            .Where(m => m != null && !m.IsDead && roles.ContainsKey(m) && roles[m] == TacticalRole.Reserve)
-            .FirstOrDefault();
-
-        if (replacement == null)
-        {
-            replacement = allMembers
-                .Where(m => m != null && !m.IsDead && roles.ContainsKey(m)
-                    && (roles[m] == TacticalRole.FlankerLeft || roles[m] == TacticalRole.FlankerRight))
-                .FirstOrDefault();
-        }
-
-        if (replacement == null)
-        {
-            replacement = allMembers
-                .Where(m => m != null && !m.IsDead && roles.ContainsKey(m)
-                    && roles[m] != TacticalRole.Alpha)
-                .FirstOrDefault();
-        }
-
         if (replacement != null)
         {
-            roles[replacement] = targetRole;
+            TacticalRole oldSide = roles[replacement];
+            roles[replacement] = TacticalRole.Harasser;
+
+            // ВОТ ЧЕГО НЕ ХВАТАЛО — переключить поведение
+            replacement.SetTacticalRole(TacticalRole.Harasser);
+
+            Debug.Log($"{replacement.name}: фланкер ({oldSide}) → харассер (замена убитого)");
         }
     }
 
-    // ===== Публичные методы для PackFormation =====
+    // ===== Публичные методы =====
     public List<PackMember> GetMembersByRole(TacticalRole role)
     {
         return allMembers

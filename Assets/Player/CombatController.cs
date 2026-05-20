@@ -9,16 +9,30 @@ public class CombatController : MonoBehaviour
     [SerializeField] private float attackSlowdownFactor = 0.5f;
     [SerializeField] private GameObject damageNumberPrefab; // ← ПРЕФАБ ЦИФР УРОНА
 
+    [Header("Health")]
+    [SerializeField] private float maxHealth = 100f;
+
     private PlayerDirection playerDirection;
+    private float currentHealth; // ДОБАВЬТЕ ЭТО ПОЛЕ
 
     [HideInInspector] public bool IsWindingUp { get; private set; }
     [HideInInspector] public bool IsAttacking { get; private set; }
     [HideInInspector] public bool AttackJustReleased { get; set; }
 
+    // ДОБАВЬТЕ ЭТО СВОЙСТВО
+    public float CurrentHealth
+    {
+        get => currentHealth;
+        private set => currentHealth = value;
+    }
+
+    public float MaxHealth => maxHealth;
+
     private float attackTimer;
 
     private void Awake()
     {
+        currentHealth = maxHealth; // ИСПРАВЛЕНО
         if (playerParams == null) playerParams = GetComponent<PlayerParams>();
         if (rb == null) rb = GetComponent<Rigidbody2D>();
         if (playerDirection == null) playerDirection = GetComponent<PlayerDirection>();
@@ -88,5 +102,22 @@ public class CombatController : MonoBehaviour
         {
             dmg.Show(damage, position);
         }
+    }
+
+    public void TakeDamage(float amount)
+    {
+        currentHealth -= amount;
+        ShowDamageNumber(amount, transform.position);
+
+        if (currentHealth <= 0)
+        {
+            Debug.Log("Player died!");
+        }
+    }
+
+    // ДОБАВЬТЕ МЕТОД ДЛЯ ПОЛУЧЕНИЯ ПРОЦЕНТА ЗДОРОВЬЯ
+    public float GetHealthPercent()
+    {
+        return currentHealth / maxHealth;
     }
 }

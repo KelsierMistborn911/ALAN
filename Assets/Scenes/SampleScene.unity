@@ -174,7 +174,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (7)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -231,7 +232,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (8)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -727,7 +729,7 @@ MonoBehaviour:
   sprintStepMultiplier: 1.5
   friction: 8
   stopThreshold: 0.1
-  longDashForce: 15
+  longDashForce: 10
   longDashCooldown: 1.5
   shortDashForce: 8
   shortDashCooldown: 0.8
@@ -799,6 +801,7 @@ MonoBehaviour:
   attackDuration: 0.3
   attackSlowdownFactor: 0.5
   damageNumberPrefab: {fileID: 7670838831571067599, guid: e94cab7dd5d41234085a4e8e6d28647c, type: 3}
+  maxHealth: 100
 --- !u!114 &497851655
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1210,7 +1213,12 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    - target: {fileID: 6155764164949604474, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
+      propertyPath: isPermanentAlpha
+      value: 1
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1267,7 +1275,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (9)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1490,7 +1499,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (5)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2225,7 +2235,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 497851648}
-  formation: {fileID: 0}
+  formation: {fileID: 1100192010}
   maxHarassers: 3
   maxFlankersPerSide: 3
   showDebugGUI: 1
@@ -2256,7 +2266,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 79624ac33f971f5428f8fad685315b12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  packManager: {fileID: 0}
+  packManager: {fileID: 1100192008}
   alphaRadius: 15
   waitingRadius: 15
   attackingRadius: 7
@@ -2284,63 +2294,6 @@ MonoBehaviour:
     towardSector: 0.5
     damping: 0.3
   showDebugGizmos: 1
---- !u!1001 &1262752333
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 12.796608
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -25.26703
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1051860732781971584, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5073433513739552847, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
-      propertyPath: m_Name
-      value: Furry (10)
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
 --- !u!1 &1421323223
 GameObject:
   m_ObjectHideFlags: 0
@@ -2633,7 +2586,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (4)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -2942,7 +2896,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (2)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3083,7 +3038,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (3)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3224,7 +3180,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (1)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -3354,11 +3311,69 @@ PrefabInstance:
       propertyPath: m_Name
       value: Furry (6)
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2227339843648822166, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7cd45754588f1a549b0044c4c19d6672, type: 3}
+--- !u!1001 &292284063103735566
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4157808895019105273, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_Name
+      value: Furry (10)
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 12.796608
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -25.26703
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4674054525820324577, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 4665a013da0b51648839f9f567c7f13b, type: 3}
 --- !u!1001 &1324469292268033924
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3495,4 +3510,4 @@ SceneRoots:
   - {fileID: 878484794}
   - {fileID: 2082671573}
   - {fileID: 229958408}
-  - {fileID: 1262752333}
+  - {fileID: 292284063103735566}

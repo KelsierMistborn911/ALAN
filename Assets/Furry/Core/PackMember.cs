@@ -6,9 +6,13 @@ public class PackMember : MonoBehaviour, IDamageable
     [Header("Параметры")]
     [SerializeField] private float maxHealth = 100f;
 
+    [Header("Роль")]
+    [SerializeField] private bool isPermanentAlpha = false;
+
     // ===== Компоненты =====
     private PackMemberMovement movement;
     private PackMemberVisual visual;
+    private BehaviorManager behaviorManager;
     private Transform player;
 
     // ===== Данные от PackFormation =====
@@ -16,7 +20,7 @@ public class PackMember : MonoBehaviour, IDamageable
     public PackFormation.WeightSet Weights { get; private set; }
     public PackFormation.Sector Sector { get; private set; }
 
-    // ===== Контекст (обновляется из PackFormation) =====
+    // ===== Контекст =====
     private Vector2 alphaPosition;
     private Vector2 playerPosition;
     private List<Vector2> allyPositions;
@@ -34,12 +38,14 @@ public class PackMember : MonoBehaviour, IDamageable
     public Vector2 AlphaPosition => alphaPosition;
     public Vector2 PlayerPosition => playerPosition;
     public List<Vector2> AllyPositions => allyPositions;
+    public bool IsPermanentAlpha => isPermanentAlpha;
 
-    // ===== Инициализация =====
+
     private void Awake()
     {
         movement = GetComponent<PackMemberMovement>();
         visual = GetComponent<PackMemberVisual>();
+        behaviorManager = GetComponent<BehaviorManager>();
 
         if (movement == null)
             Debug.LogWarning($"PackMember {name}: PackMemberMovement не найден!");
@@ -62,16 +68,35 @@ public class PackMember : MonoBehaviour, IDamageable
         }
     }
 
-    // ===== Установка данных от PackFormation =====
     public void SetTacticalRole(PackManager.TacticalRole role)
     {
         CurrentRole = role;
+
+        // Активируем соответствующее поведение через BehaviorManager
+        if (behaviorManager != null)
+        {
+            switch (role)
+            {
+                case PackManager.TacticalRole.Alpha:
+                    behaviorManager.SwitchBehavior("Alpha");
+                    break;
+                case PackManager.TacticalRole.FlankerLeft:
+                case PackManager.TacticalRole.FlankerRight:
+                    behaviorManager.SwitchBehavior("Flanker");
+                    break;
+                case PackManager.TacticalRole.Harasser:
+                    behaviorManager.SwitchBehavior("Harasser");
+                    break;
+                default:
+                    behaviorManager.SwitchBehavior("Encircle");
+                    break;
+            }
+        }
     }
 
     public void SetPotentialWeights(PackFormation.WeightSet weights)
     {
         Weights = weights;
-
         if (movement != null)
             movement.SetWeights(weights);
     }
@@ -79,7 +104,6 @@ public class PackMember : MonoBehaviour, IDamageable
     public void SetSector(PackFormation.Sector sector)
     {
         Sector = sector;
-
         if (movement != null)
             movement.SetSector(sector);
     }
@@ -87,15 +111,10 @@ public class PackMember : MonoBehaviour, IDamageable
     public void SetPlayer(Transform playerTransform)
     {
         player = playerTransform;
-
         if (visual != null)
             visual.SetPlayer(playerTransform);
     }
 
-    /// <summary>
-    /// Обновляет контекст: позиции Alpha, игрока и всех союзников.
-    /// Вызывается из PackFormation после пересчёта секторов.
-    /// </summary>
     public void UpdateContext(Vector2 alphaPos, Vector2 playerPos, List<Vector2> allies)
     {
         alphaPosition = alphaPos;
@@ -106,7 +125,6 @@ public class PackMember : MonoBehaviour, IDamageable
             movement.UpdateContext(alphaPos, playerPos, allies);
     }
 
-    // ===== Здоровье =====
     public PackManager.HealthStatus GetHealthStatus()
     {
         if (isDead) return PackManager.HealthStatus.Dead;
@@ -121,7 +139,7 @@ public class PackMember : MonoBehaviour, IDamageable
         currentHealth -= amount;
         OnHealthChanged?.Invoke(this);
 
-        // === ПОКАЗАТЬ ЦИФРУ УРОНА ===
+        // Используем существующую систему отображения урона
         CombatController combat = FindObjectOfType<CombatController>();
         if (combat != null)
         {
@@ -141,7 +159,16 @@ public class PackMember : MonoBehaviour, IDamageable
         if (movement != null)
             movement.StopMoving();
 
+        if (behaviorManager != null)
+            behaviorManager.enabled = false;
+
         OnDied?.Invoke(this);
-        Destroy(gameObject);
+
+        // Добавляем эффект смерти (опционально)
+        var deathEffect = GetComponent<ParticleSystem>();
+        if (deathEffect != null)
+            deathEffect.Play();
+
+        Destroy(gameObject, 0.5f);
     }
 }

@@ -7,7 +7,7 @@ public enum WolfGait
     QuadrupedalLeap
 }
 
-[RequireComponent(typeof(Rigidbody2D))]  // ← ИСПРАВЛЕНО
+[RequireComponent(typeof(Rigidbody2D))]
 public class WolfMovement : MonoBehaviour
 {
     [Header("Физика волка")]
@@ -17,17 +17,17 @@ public class WolfMovement : MonoBehaviour
     [SerializeField] private float maxSpeed = 20f;
 
     [Header("Двуногий шаг")]
-    [SerializeField] private float walkImpulse = 200f;
+    [SerializeField] private float walkImpulse = 800f;      // УВЕЛИЧЕНО с 200
     [SerializeField] private float walkStepInterval = 0.3f;
     [SerializeField] private float walkTurnTorque = 300f;
 
     [Header("Двуногий бег")]
-    [SerializeField] private float runImpulse = 500f;
+    [SerializeField] private float runImpulse = 1500f;      // УВЕЛИЧЕНО с 500
     [SerializeField] private float runStepInterval = 0.5f;
     [SerializeField] private float runTurnTorque = 150f;
 
     [Header("Прыжки на четвереньках")]
-    [SerializeField] private float leapImpulse = 900f;
+    [SerializeField] private float leapImpulse = 2500f;     // УВЕЛИЧЕНО с 900
     [SerializeField] private float leapInterval = 0.8f;
     [SerializeField] private float leapTurnTorque = 50f;
     [SerializeField] private float leapUpwardRatio = 0.3f;
@@ -36,19 +36,32 @@ public class WolfMovement : MonoBehaviour
     [SerializeField] private float zoneRadius = 10f;
     [SerializeField] private float brakingDistance = 5f;
 
-    private Rigidbody2D rb;  // ← ИСПРАВЛЕНО
+    [Header("Диагностика")]
+    [SerializeField] private bool enableDebugLogs = true;
+
+    private Rigidbody2D rb;
     private Vector3 targetPoint;
     private bool hasTarget;
     private WolfGait currentGait = WolfGait.BipedalWalk;
     private float stepCooldown;
+    private float lastLogTime;
+    private float logInterval = 1f;
 
     public WolfGait CurrentGait
     {
         get => currentGait;
-        set => currentGait = value;
+        set
+        {
+            if (currentGait != value)
+            {
+                if (enableDebugLogs)
+                    Debug.Log($"[WolfMovement] {name}: смена аллюра {currentGait} → {value}");
+                currentGait = value;
+            }
+        }
     }
 
-    public Vector2 Velocity => rb.velocity;  // ← ИСПРАВЛЕНО
+    public Vector2 Velocity => rb.velocity;
     public float CurrentSpeed => rb.velocity.magnitude;
 
     private Vector3 IsoForward
@@ -75,12 +88,31 @@ public class WolfMovement : MonoBehaviour
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();  // ← ИСПРАВЛЕНО
+        rb = GetComponent<Rigidbody2D>();
+
+        // НАСТРОЙКА ФИЗИКИ
         rb.mass = mass;
         rb.drag = groundDrag;
         rb.angularDrag = angularDrag;
-        rb.gravityScale = 0;  // ← ИСПРАВЛЕНО (вместо useGravity = false)
-        rb.constraints = RigidbodyConstraints2D.FreezeRotation;  // ← ИСПРАВЛЕНО
+        rb.gravityScale = 0;
+
+        // ВАЖНО: Не замораживаем вращение, чтобы AddTorque работал
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation; // Оставляем, но Torque будет работать по-другому
+
+        // Альтернатива: использовать AddForce для поворота
+        // rb.constraints = RigidbodyConstraints2D.None;
+
+        if (enableDebugLogs)
+            Debug.Log($"[WolfMovement] {name}: физика инициализирована (mass={mass}, drag={groundDrag}, maxSpeed={maxSpeed})");
+    }
+
+    void Start()
+    {
+        // Дополнительная проверка после старта
+        if (rb == null)
+        {
+            Debug.LogError($"[WolfMovement] {name}: Rigidbody2D не найден!");
+        }
     }
 
     public void SetTargetZone(Vector3 point, float radius)
@@ -88,6 +120,9 @@ public class WolfMovement : MonoBehaviour
         targetPoint = point;
         zoneRadius = radius;
         hasTarget = true;
+
+        if (enableDebugLogs)
+            Debug.Log($"[WolfMovement] {name}: установлена новая цель ({point.x:F1}, {point.y:F1}), радиус={radius:F1}, дистанция={Vector3.Distance(transform.position, point):F1}");
     }
 
     void FixedUpdate()
@@ -102,6 +137,13 @@ public class WolfMovement : MonoBehaviour
 
         bool needToMove = distanceToTarget > zoneRadius;
 
+        // Периодическое логирование
+        if (enableDebugLogs && Time.time - lastLogTime >= logInterval)
+        {
+            lastLogTime = Time.time;
+            Debug.Log($"[WolfMovement] {name}: дист={distanceToTarget:F1}, needToMove={needToMove}, скорость={rb.velocity.magnitude:F1}, аллюр={currentGait}, impulseCD={stepCooldown:F2}");
+        }
+
         if (needToMove)
         {
             ApplySteering(directionToTarget);
@@ -114,12 +156,23 @@ public class WolfMovement : MonoBehaviour
         }
         else
         {
+            if (enableDebugLogs && distanceToTarget < zoneRadius * 0.5f && rb.velocity.magnitude > 0.5f)
+            {
+                Debug.Log($"[WolfMovement] {name}: достиг зоны цели! (дист={distanceToTarget:F1} <= {zoneRadius:F1})");
+            }
             Brake(distanceToTarget);
         }
 
+        // Ограничение скорости
         if (rb.velocity.magnitude > maxSpeed)
         {
             rb.velocity = rb.velocity.normalized * maxSpeed;
+        }
+
+        // Диагностика: если скорость 0 но нужно двигаться
+        if (enableDebugLogs && needToMove && rb.velocity.magnitude < 0.1f && Time.frameCount % 60 == 0)
+        {
+            Debug.LogWarning($"[WolfMovement] {name}: скорость = 0, но нужно двигаться! Проверьте импульс или коллизии.");
         }
     }
 
@@ -127,18 +180,27 @@ public class WolfMovement : MonoBehaviour
     {
         float angle = AngleToTarget;
         float turnTorque = GetTurnTorque();
-
         float speedFactor = 1f / (1f + rb.velocity.magnitude * 0.3f);
         float effectiveTorque = turnTorque * speedFactor;
 
-        // Rigidbody2D использует AddTorque с одним параметром float
-        rb.AddTorque(angle * effectiveTorque * Time.fixedDeltaTime);
+        // Используем AddForce для поворота вместо AddTorque (работает даже с FreezeRotation)
+        Vector3 torqueDirection = new Vector3(-Mathf.Sin(transform.eulerAngles.z * Mathf.Deg2Rad),
+                                               Mathf.Cos(transform.eulerAngles.z * Mathf.Deg2Rad), 0);
+        rb.AddForce(torqueDirection * angle * effectiveTorque * Time.fixedDeltaTime * 0.1f, ForceMode2D.Force);
+
+        // Альтернатива: вращать трансформ напрямую
+        // float turnAmount = Mathf.Clamp(angle * turnTorque * Time.fixedDeltaTime, -maxTurnSpeed, maxTurnSpeed);
+        // transform.Rotate(0, 0, turnAmount);
+
+        if (enableDebugLogs && Mathf.Abs(angle) > 30f && Time.frameCount % 30 == 0)
+        {
+            Debug.Log($"[WolfMovement] {name}: поворот, угол={angle:F1}°, момент={effectiveTorque:F1}");
+        }
     }
 
     void ApplyStepImpulse(Vector3 directionToTarget, float distanceToTarget)
     {
         float impulse = GetStepImpulse();
-
         Vector3 impulseDirection = IsoForward;
 
         if (currentGait == WolfGait.QuadrupedalLeap)
@@ -146,24 +208,47 @@ public class WolfMovement : MonoBehaviour
             impulseDirection = (IsoForward + Vector3.up * leapUpwardRatio).normalized;
         }
 
+        // Торможение при приближении к цели
         float brakingFactor = Mathf.Clamp01((distanceToTarget - zoneRadius) / brakingDistance);
+        float originalImpulse = impulse;
         impulse *= brakingFactor;
 
-        float speedTowardsTarget = Vector2.Dot(rb.velocity, directionToTarget);  // ← ИСПРАВЛЕНО
+        // Не добавляем импульс если уже быстро движемся к цели
+        float speedTowardsTarget = Vector2.Dot(rb.velocity, directionToTarget);
         if (speedTowardsTarget > 0)
         {
             float speedFactor = 1f - Mathf.Clamp01(speedTowardsTarget / maxSpeed);
             impulse *= speedFactor;
         }
 
-        rb.AddForce((Vector2)impulseDirection * impulse, ForceMode2D.Impulse);  // ← ИСПРАВЛЕНО
+        // Минимальный импульс, чтобы сдвинуться с места
+        if (impulse < 100f && rb.velocity.magnitude < 1f)
+        {
+            impulse = 200f;
+            if (enableDebugLogs)
+                Debug.Log($"[WolfMovement] {name}: минимальный импульс для старта = {impulse}");
+        }
+
+        // ПРИМЕНЯЕМ СИЛУ
+        rb.AddForce((Vector2)impulseDirection * impulse, ForceMode2D.Impulse);
+
+        if (enableDebugLogs && Time.frameCount % 10 == 0)
+        {
+            Debug.Log($"[WolfMovement] {name}: шаг {currentGait}, импульс={impulse:F1} (было={originalImpulse:F1}), новая скорость={rb.velocity.magnitude:F1}");
+        }
     }
 
     void Brake(float distanceToTarget)
     {
         if (rb.velocity.magnitude > 2f && distanceToTarget < zoneRadius * 0.5f)
         {
-            rb.AddForce(-rb.velocity.normalized * 2f, ForceMode2D.Force);  // ← ИСПРАВЛЕНО
+            float brakeForce = 5f; // Увеличено с 2
+            rb.AddForce(-rb.velocity.normalized * brakeForce, ForceMode2D.Force);
+
+            if (enableDebugLogs && Time.frameCount % 30 == 0)
+            {
+                Debug.Log($"[WolfMovement] {name}: торможение (дист={distanceToTarget:F1}, скорость={rb.velocity.magnitude:F1})");
+            }
         }
     }
 

@@ -15,6 +15,7 @@ public class WolfEnemy : MonoBehaviour
     {
         movement = GetComponent<WolfMovement>();
         packManager = FindObjectOfType<WolfPackManager>();
+        Debug.Log($"[WolfEnemy] {name} инициализирован, isSpecial={isSpecial}");
     }
 
     void Update()
@@ -25,7 +26,7 @@ public class WolfEnemy : MonoBehaviour
 
         if (player != null)
         {
-            Debug.Log($"🐺 ВОЛК {name} ОБНАРУЖИЛ ИГРОКА! Расстояние: {Vector3.Distance(transform.position, player.transform.position)}");
+            Debug.Log($"🐺 [WolfEnemy] {name} ОБНАРУЖИЛ ИГРОКА! Расстояние: {Vector3.Distance(transform.position, player.transform.position):F2}");
             detected = true;
             packManager.OnPlayerDetected(player.transform);
         }
@@ -35,6 +36,7 @@ public class WolfEnemy : MonoBehaviour
     {
         currentTargetPoint = point;
         movement.SetTargetZone(point, zoneRadius);
+        Debug.Log($"[WolfEnemy] {name} получил цель: ({point.x:F1}, {point.y:F1}), радиус зоны={zoneRadius:F1}");
     }
 
     public Vector3 GetPosition() => transform.position;

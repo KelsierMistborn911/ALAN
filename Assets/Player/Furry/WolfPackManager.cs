@@ -1,4 +1,4 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using System.Collections.Generic;
 
 public class WolfPackManager : MonoBehaviour
@@ -13,20 +13,23 @@ public class WolfPackManager : MonoBehaviour
     void Awake()
     {
         strategy = GetComponent<WolfStrategy>();
-
-        // Автоматически находим всех волков на сцене
         FindAllWolves();
+        Debug.Log($"[WolfPackManager] РњРµРЅРµРґР¶РµСЂ СЃС‚Р°Рё РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ");
     }
 
     void FindAllWolves()
     {
-        // Находим всех волков на сцене
         WolfEnemy[] foundWolves = FindObjectsOfType<WolfEnemy>();
 
         packMembers.Clear();
         packMembers.AddRange(foundWolves);
 
-        Debug.Log($"WolfPackManager: Найдено {packMembers.Count} волков");
+        Debug.Log($"[WolfPackManager] РќР°Р№РґРµРЅРѕ {packMembers.Count} РІРѕР»РєРѕРІ РІ СЃС‚Р°Рµ");
+
+        foreach (var wolf in packMembers)
+        {
+            Debug.Log($"[WolfPackManager]   - {wolf.name} (special={wolf.isSpecial})");
+        }
 
         CacheMovements();
     }
@@ -40,16 +43,19 @@ public class WolfPackManager : MonoBehaviour
             {
                 WolfMovement movement = wolf.GetComponent<WolfMovement>();
                 if (movement != null)
+                {
                     packMovements.Add(movement);
+                    Debug.Log($"[WolfPackManager] РљСЌС€РёСЂРѕРІР°РЅ Movement РґР»СЏ {wolf.name}");
+                }
                 else
-                    Debug.LogWarning($"У волка {wolf.name} нет компонента WolfMovement");
+                    Debug.LogWarning($"[WolfPackManager] РЈ РІРѕР»РєР° {wolf.name} РЅРµС‚ РєРѕРјРїРѕРЅРµРЅС‚Р° WolfMovement");
             }
         }
     }
 
     public void OnPlayerDetected(Transform player)
     {
-        // Обновляем список перед атакой (на случай если волки появились позже)
+        Debug.Log($"[WolfPackManager] вљ пёЏ РР“Р РћРљ РћР‘РќРђР РЈР–Р•Рќ! РџРѕР·РёС†РёСЏ: {player.position}");
         FindAllWolves();
 
         strategy.ProcessDetection(player, packMembers, packMovements, encirclementRadius, minDistanceBetweenWolves);
